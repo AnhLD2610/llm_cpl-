@@ -211,11 +211,12 @@ class EncodingModel(nn.Module):
             # outputs_words = self.encoder.encode((inputs_embeds=input_embedding, attention_mask=inputs['mask'])[0]
         else:
 
-            features = self.tokenizer(
-            [self.encoder.prepare_for_tokenization(sentence) for sentence in inputs['input']]
-            )
+            # features = self.tokenizer(
+            # [self.encoder.prepare_for_tokenization(sentence) for sentence in inputs['input']]
+            # )
+            features = self.tokenizer(inputs['input'])
             features = batch_to_device(features, self.config.device)
-
+            print(features)
             # with torch.no_grad():
             embeddings = self.encoder.forward(features)
 
