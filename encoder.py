@@ -11,29 +11,38 @@ class EncodingModel(nn.Module):
         nn.Module.__init__(self)
         self.config = config
         if config.model == 'bert':
-            tokenizer = AutoTokenizer.from_pretrained(
-                "McGill-NLP/LLM2Vec-Meta-Llama-3-8B-Instruct-mntp"
-            )
-            config = AutoConfig.from_pretrained(
-                "McGill-NLP/LLM2Vec-Meta-Llama-3-8B-Instruct-mntp", trust_remote_code=True
-            )
-            model = AutoModel.from_pretrained(
+            # tokenizer = AutoTokenizer.from_pretrained(
+            #     "McGill-NLP/LLM2Vec-Meta-Llama-3-8B-Instruct-mntp"
+            # )
+            # config = AutoConfig.from_pretrained(
+            #     "McGill-NLP/LLM2Vec-Meta-Llama-3-8B-Instruct-mntp", trust_remote_code=True
+            # )
+            # model = AutoModel.from_pretrained(
+            #     "McGill-NLP/LLM2Vec-Meta-Llama-3-8B-Instruct-mntp",
+            #     trust_remote_code=True,
+            #     config=config,
+            #     torch_dtype=torch.bfloat16,
+            #     device_map="cuda" if torch.cuda.is_available() else "cpu",
+            # )
+
+
+            # model.enable_input_require_grads()
+            # model = PeftModel.from_pretrained(
+            #     model,
+            #     "McGill-NLP/LLM2Vec-Meta-Llama-3-8B-Instruct-mntp-supervised",
+            #     is_trainable=True,
+            # )
+            # model = model.merge_and_unload()  # This can take several minutes on cpu
+            # self.encoder = LLM2Vec(model, tokenizer, pooling_mode="mean", max_length=256)
+            self.encoder = LLM2Vec.from_pretrained(
                 "McGill-NLP/LLM2Vec-Meta-Llama-3-8B-Instruct-mntp",
-                trust_remote_code=True,
-                config=config,
-                torch_dtype=torch.bfloat16,
+                peft_model_name_or_path="McGill-NLP/LLM2Vec-Meta-Llama-3-8B-Instruct-mntp-supervised",
                 device_map="cuda" if torch.cuda.is_available() else "cpu",
+                torch_dtype=torch.bfloat16,
+                merge_peft=True,
+                pooling_mode="mean",
+                max_length=256,
             )
-
-
-            model.enable_input_require_grads()
-            model = PeftModel.from_pretrained(
-                model,
-                "McGill-NLP/LLM2Vec-Meta-Llama-3-8B-Instruct-mntp-supervised",
-                is_trainable=True,
-            )
-            model = model.merge_and_unload()  # This can take several minutes on cpu
-            self.encoder = LLM2Vec(model, tokenizer, pooling_mode="mean", max_length=256)
 
             # model.enable_input_require_grads()
             # # Loading supervised model. This loads the trained LoRA weights on top of MNTP model. Hence the final weights are -- Base model + MNTP (LoRA) + supervised (LoRA).
