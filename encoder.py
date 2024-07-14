@@ -1,8 +1,8 @@
 import torch
 import torch.nn as nn
 import numpy as np
-# from llm2vec import LLM2Vec
-from llm2vec import *
+from llm2vec import LLM2Vec
+# from llm2vec import *
 from torch import Tensor, device, nn
 
 import torch
@@ -210,13 +210,13 @@ class EncodingModel(nn.Module):
             # outputs_words = self.encoder.encode((inputs_embeds=input_embedding, attention_mask=inputs['mask'])[0]
         else:
 
-            features = self.tokenize(
+            features = self.tokenizer(
             [LLM2Vec.prepare_for_tokenization(sentence) for sentence in inputs['input']]
             )
             features = batch_to_device(features, self.config.device)
 
             # with torch.no_grad():
-            embeddings = self.forward(features)
+            embeddings = self.encoder.forward(features)
 
             # outputs_words = self.encoder.encode_train((inputs['input'])) # (b, h)
         # outputs_words = torch.nn.functional.normalize(outputs_words, p=2, dim=1)
