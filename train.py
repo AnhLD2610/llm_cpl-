@@ -46,6 +46,8 @@ class Manager(object):
         encoder.eval()
         for step, (instance, label, idx) in enumerate(data_loader):
             for k in instance.keys():
+                if k == 'input':
+                    continue 
                 instance[k] = instance[k].to(self.config.device)
             hidden = encoder(instance) 
             fea = hidden.detach().cpu().data # (1, H)
@@ -66,6 +68,8 @@ class Manager(object):
         encoder.eval()
         for step, (instance, label, idx) in enumerate(data_loader):
             for k in instance.keys():
+                if k == 'input':
+                    continue
                 instance[k] = instance[k].to(self.config.device)
             hidden = encoder(instance) 
             fea = hidden.detach().cpu().data # (1, H)
@@ -107,6 +111,8 @@ class Manager(object):
         for i in range(epoch):
             for batch_num, (instance, labels, ind) in enumerate(data_loader):
                 for k in instance.keys():
+                    if k == 'input':
+                        continue
                     instance[k] = instance[k].to(self.config.device)
                 hidden = encoder(instance)
                 loss = self.moment.contrastive_loss(hidden, labels, is_memory)
@@ -137,6 +143,8 @@ class Manager(object):
         encoder.eval()
         for batch_num, (instance, label, _) in enumerate(test_loader):
             for k in instance.keys():
+                if k == 'input':
+                    continue
                 instance[k] = instance[k].to(self.config.device)
             hidden = encoder(instance)
             fea = hidden.cpu().data # place in cpu to eval
