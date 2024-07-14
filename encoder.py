@@ -1,7 +1,9 @@
 import torch
 import torch.nn as nn
 import numpy as np
-from llm2vec import LLM2Vec
+# from llm2vec import LLM2Vec
+from llm2vec import *
+
 import torch
 from transformers import AutoTokenizer, AutoModel, AutoConfig
 from peft import LoraConfig, get_peft_model
@@ -197,9 +199,18 @@ class EncodingModel(nn.Module):
             input_embedding = self.embedding_input(inputs['ids'])
             # outputs_words = self.encoder.encode((inputs_embeds=input_embedding, attention_mask=inputs['mask'])[0]
         else:
-            outputs_words = self.encoder.encode_train((inputs['input'])) # (b, h)
+
+            features = self.tokenize(
+            [self.prepare_for_tokenization(sentence) for sentence in inputs['input']]
+            )
+            features = batch_to_device(features, self.config.device)
+
+            # with torch.no_grad():
+            embeddings = self.forward(features)
+
+            # outputs_words = self.encoder.encode_train((inputs['input'])) # (b, h)
         # outputs_words = torch.nn.functional.normalize(outputs_words, p=2, dim=1)
-        return outputs_words
+        return embeddings
         # # return [CLS] hidden
         # if pattern == 'cls' or pattern == 'softprompt':
         #     clss = torch.zeros(batch_size, dtype=torch.long)
