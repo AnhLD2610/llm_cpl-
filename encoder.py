@@ -213,7 +213,7 @@ class EncodingModel(nn.Module):
             # features = self.tokenizer(
             # [self.encoder.prepare_for_tokenization(sentence) for sentence in inputs['input']]
             # )
-            features = self.tokenizer(inputs['input'], return_tensors="pt")
+            features = self.tokenizer(inputs['input'], return_tensors="pt",padding=True)
             features = batch_to_device(features, self.config.device)
             print(features)
             # with torch.no_grad():
