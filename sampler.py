@@ -249,7 +249,7 @@ class data_sampler_CFRL(object):
     #     return ids, mask
 
 
-    def _tokenize_hardprompt_llm2vec(sample):
+    def _tokenize_hardprompt_llm2vec(self, sample):
         '''
         X . The relation between e1 and e2 is: [MASK]
         '''
