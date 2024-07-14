@@ -28,10 +28,10 @@ class Moment:
             data_loader = get_data_loader_BERT(self.config, dataset) # shuffle=False
             lbs = []
             for step, (instance, labels, ind) in enumerate(data_loader):
-                for k in instance.keys():
-                    if k == 'input':
-                        continue 
-                    instance[k] = instance[k].to(self.config.device)
+                # for k in instance.keys():
+                #     if k == 'input':
+                #         continue 
+                #     instance[k] = instance[k].to(self.config.device)
                 hidden = encoder(instance)
                 fea = hidden.detach().cpu().data
                 self.update(ind, fea)
@@ -44,10 +44,10 @@ class Moment:
             data_loader = get_data_loader_BERT(self.config, dataset) # shuffle=False
             lbs = []
             for step, (instance, labels, ind) in enumerate(data_loader):
-                for k in instance.keys():
-                    if k == 'input':
-                        continue 
-                    instance[k] = instance[k].to(self.config.device)
+                # for k in instance.keys():
+                #     if k == 'input':
+                #         continue 
+                #     instance[k] = instance[k].to(self.config.device)
                 hidden = encoder(instance)
                 fea = hidden.detach().cpu().data
                 self.update(ind, fea, is_memory)
@@ -64,10 +64,10 @@ class Moment:
     def update_allmem(self, encoder):
             data_loader = get_data_loader_BERT(self.config, self.mem_samples, batch_size=64) # shuffle=False
             for step, (instance, labels, ind) in enumerate(data_loader):
-                for k in instance.keys():
-                    if k == 'input':
-                        continue 
-                    instance[k] = instance[k].to(self.config.device)
+                # for k in instance.keys():
+                #     if k == 'input':
+                #         continue 
+                #     instance[k] = instance[k].to(self.config.device)
                 hidden = encoder(instance)
                 fea = hidden.detach().cpu().data
                 self.update(ind, fea, is_memory=True)

@@ -45,10 +45,10 @@ class Manager(object):
         features = []
         encoder.eval()
         for step, (instance, label, idx) in enumerate(data_loader):
-            for k in instance.keys():
-                if k == 'input':
-                    continue 
-                instance[k] = instance[k].to(self.config.device)
+            # for k in instance.keys():
+            #     if k == 'input':
+            #         continue 
+            #     instance[k] = instance[k].to(self.config.device)
             hidden = encoder(instance) 
             fea = hidden.detach().cpu().data # (1, H)
             features.append(fea)    
@@ -67,10 +67,10 @@ class Manager(object):
         features = []
         encoder.eval()
         for step, (instance, label, idx) in enumerate(data_loader):
-            for k in instance.keys():
-                if k == 'input':
-                    continue
-                instance[k] = instance[k].to(self.config.device)
+            # for k in instance.keys():
+            #     if k == 'input':
+            #         continue
+            #     instance[k] = instance[k].to(self.config.device)
             hidden = encoder(instance) 
             fea = hidden.detach().cpu().data # (1, H)
             features.append(fea)
@@ -110,10 +110,10 @@ class Manager(object):
         epoch = self.config.epoch_mem if is_memory else self.config.epoch
         for i in range(epoch):
             for batch_num, (instance, labels, ind) in enumerate(data_loader):
-                for k in instance.keys():
-                    if k == 'input':
-                        continue
-                    instance[k] = instance[k].to(self.config.device)
+                # for k in instance.keys():
+                #     if k == 'input':
+                #         continue
+                #     instance[k] = instance[k].to(self.config.device)
                 hidden = encoder(instance)
                 loss = self.moment.contrastive_loss(hidden, labels, is_memory)
                 optimizer.zero_grad()
@@ -142,10 +142,10 @@ class Manager(object):
         total = 0.0
         encoder.eval()
         for batch_num, (instance, label, _) in enumerate(test_loader):
-            for k in instance.keys():
-                if k == 'input':
-                    continue
-                instance[k] = instance[k].to(self.config.device)
+            # for k in instance.keys():
+            #     if k == 'input':
+            #         continue
+            #     instance[k] = instance[k].to(self.config.device)
             hidden = encoder(instance)
             fea = hidden.cpu().data # place in cpu to eval
             logits = -self._edist(fea, seen_proto) # (B, N) ;N is the number of seen relations
