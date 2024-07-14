@@ -4,6 +4,8 @@ import random
 import numpy as np
 from transformers import AutoTokenizer, AutoModel, AutoConfig
 
+
+# config
 class data_sampler_CFRL(object):
     def __init__(self, config=None, seed=None):
         self.config = config
