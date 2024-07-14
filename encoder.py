@@ -11,20 +11,14 @@ class EncodingModel(nn.Module):
         nn.Module.__init__(self)
         self.config = config
         if config.model == 'bert':
-            # self.encoder = BertModel.from_pretrained(config.bert_path).to(config.device)
-        # elif config.model == 'roberta':
-        #     self.encoder = RobertaModel.from_pretrained(config.roberta_path).to(config.device)
-        #     self.encoder.resize_token_embeddings(config.vocab_size)
-
-
             tokenizer = AutoTokenizer.from_pretrained(
-                "McGill-NLP/LLM2Vec-Meta-Llama-3-8B-Instruct-mntp-supervised"
+                "McGill-NLP/LLM2Vec-Meta-Llama-3-8B-Instruct-mntp"
             )
             config = AutoConfig.from_pretrained(
-                "McGill-NLP/LLM2Vec-Meta-Llama-3-8B-Instruct-mntp-supervised", trust_remote_code=True
+                "McGill-NLP/LLM2Vec-Meta-Llama-3-8B-Instruct-mntp", trust_remote_code=True
             )
             model = AutoModel.from_pretrained(
-                "McGill-NLP/LLM2Vec-Meta-Llama-3-8B-Instruct-mntp-supervised",
+                "McGill-NLP/LLM2Vec-Meta-Llama-3-8B-Instruct-mntp",
                 trust_remote_code=True,
                 config=config,
                 torch_dtype=torch.bfloat16,
@@ -39,6 +33,7 @@ class EncodingModel(nn.Module):
                 is_trainable=True,
             )
             model = model.merge_and_unload()  # This can take several minutes on cpu
+            self.encoder = LLM2Vec(model, tokenizer, pooling_mode="mean", max_length=256)
 
             # model.enable_input_require_grads()
             # # Loading supervised model. This loads the trained LoRA weights on top of MNTP model. Hence the final weights are -- Base model + MNTP (LoRA) + supervised (LoRA).
@@ -51,7 +46,6 @@ class EncodingModel(nn.Module):
             #     if 'lora_A' in name or 'lora_B' in name:
             #         param.requires_grad = True
             
-            self.encoder = LLM2Vec(model, tokenizer, pooling_mode="mean", max_length=256)
 
         # if config.tune == 'prompt':
         #     for param in self.encoder.parameters():
