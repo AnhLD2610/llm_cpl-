@@ -103,11 +103,48 @@ class Manager(object):
         # return mem_set, features, rel_proto
         
 
+    # def train_model(self, encoder, training_data, is_memory=False):
+    #     data_loader = get_data_loader_BERT(self.config, training_data, shuffle=True)
+    #     optimizer = optim.Adam(params=encoder.parameters(), lr=self.config.lr)
+    #     encoder.train()
+    #     epoch = self.config.epoch_mem if is_memory else self.config.epoch
+    #     for i in range(epoch):
+    #         for batch_num, (instance, labels, ind) in enumerate(data_loader):
+    #             # for k in instance.keys():
+    #             #     if k == 'input':
+    #             #         continue
+    #             #     instance[k] = instance[k].to(self.config.device)
+    #             hidden = encoder(instance)
+    #             loss = self.moment.contrastive_loss(hidden, labels, is_memory)
+    #             optimizer.zero_grad()
+    #             loss.backward()
+    #             optimizer.step()
+    #             optimizer.zero_grad()
+    #             # update moment
+    #             if is_memory:
+    #                 self.moment.update(ind, hidden.detach().cpu().data, is_memory=True)
+    #                 # self.moment.update_allmem(encoder)
+    #             else:
+    #                 self.moment.update(ind, hidden.detach().cpu().data, is_memory=False)
+    #             # print
+    #             if is_memory:
+    #                 sys.stdout.write('MemoryTrain:  epoch {0:2}, batch {1:5} | loss: {2:2.7f}'.format(i, batch_num, loss.item()) + '\r')
+    #             else:
+    #                 sys.stdout.write('CurrentTrain: epoch {0:2}, batch {1:5} | loss: {2:2.7f}'.format(i, batch_num, loss.item()) + '\r')
+    #             sys.stdout.flush() 
+    #     print('')             
+
     def train_model(self, encoder, training_data, is_memory=False):
         data_loader = get_data_loader_BERT(self.config, training_data, shuffle=True)
         optimizer = optim.Adam(params=encoder.parameters(), lr=self.config.lr)
         encoder.train()
         epoch = self.config.epoch_mem if is_memory else self.config.epoch
+
+        # Print the encoder parameters and requires_grad status
+        print("Encoder parameters and their requires_grad status:")
+        for name, param in encoder.named_parameters():
+            print(f"Parameter: {name}, requires_grad: {param.requires_grad}")
+
         for i in range(epoch):
             for batch_num, (instance, labels, ind) in enumerate(data_loader):
                 # for k in instance.keys():
@@ -131,8 +168,9 @@ class Manager(object):
                     sys.stdout.write('MemoryTrain:  epoch {0:2}, batch {1:5} | loss: {2:2.7f}'.format(i, batch_num, loss.item()) + '\r')
                 else:
                     sys.stdout.write('CurrentTrain: epoch {0:2}, batch {1:5} | loss: {2:2.7f}'.format(i, batch_num, loss.item()) + '\r')
-                sys.stdout.flush() 
-        print('')             
+                sys.stdout.flush()
+        print('')
+
 
     def eval_encoder_proto(self, encoder, seen_proto, seen_relid, test_data):
         batch_size = 16
