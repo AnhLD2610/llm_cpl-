@@ -135,14 +135,14 @@ class EncodingModel(nn.Module):
 
 
     def forward(self, inputs): # (b, max_length)
-        batch_size = inputs['input'].size()[0]
-        tensor_range = torch.arange(batch_size) # (b)     
+        # batch_size = inputs['input'].size()[0]
+        # tensor_range = torch.arange(batch_size) # (b)     
         pattern = self.config.pattern
         if pattern == 'softprompt' or pattern == 'hybridprompt':
             input_embedding = self.embedding_input(inputs['ids'])
-            outputs_words = self.encoder(inputs_embeds=input_embedding, attention_mask=inputs['mask'])[0]
+            # outputs_words = self.encoder.encode((inputs_embeds=input_embedding, attention_mask=inputs['mask'])[0]
         else:
-            outputs_words = self.encoder(inputs['input']) # (b, h)
+            outputs_words = self.encoder.encode((inputs['input'])) # (b, h)
         # outputs_words = torch.nn.functional.normalize(outputs_words, p=2, dim=1)
         return outputs_words
         # # return [CLS] hidden

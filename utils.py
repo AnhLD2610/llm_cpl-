@@ -103,9 +103,9 @@ class Moment:
                 sample_id = idx
             ct_x = self.features[sample_id].to(self.config.device) # (N, H)
             ct_y = self.labels[sample_id] # (N)
-
+        
         # l2 normalize
-        x = F.normalize(x, p=2, dim=1)
+        x = F.normalize(x, p=2, dim=1).to(self.config.device)
         ct_x = F.normalize(ct_x, p=2, dim=1)
         
         t1 = torch.mm(x, ct_x.T) + 1 # 0 <= cos + 1 <= 2
