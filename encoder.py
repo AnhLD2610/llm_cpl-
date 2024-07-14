@@ -3,20 +3,30 @@ import torch.nn as nn
 import numpy as np
 # from llm2vec import LLM2Vec
 from llm2vec import *
+from torch import Tensor, device, nn
 
 import torch
 from transformers import AutoTokenizer, AutoModel, AutoConfig
 from peft import LoraConfig, get_peft_model
 from typing import Any, Dict, List, Optional, Tuple, Union
 
+def batch_to_device(batch, target_device: device):
+    """
+    send a pytorch batch to a device (CPU/GPU)
+    """
+    for key in batch:
+        if isinstance(batch[key], Tensor):
+            batch[key] = batch[key].to(target_device)
+    return batch
+
 class EncodingModel(nn.Module):
     def __init__(self, config):
         nn.Module.__init__(self)
         self.config = config
         if config.model == 'bert':
-            # tokenizer = AutoTokenizer.from_pretrained(
-            #     "McGill-NLP/LLM2Vec-Meta-Llama-3-8B-Instruct-mntp"
-            # )
+            self.tokenizer = AutoTokenizer.from_pretrained(
+                "McGill-NLP/LLM2Vec-Meta-Llama-3-8B-Instruct-mntp"
+            )
             # config = AutoConfig.from_pretrained(
             #     "McGill-NLP/LLM2Vec-Meta-Llama-3-8B-Instruct-mntp", trust_remote_code=True
             # )
@@ -201,7 +211,7 @@ class EncodingModel(nn.Module):
         else:
 
             features = self.tokenize(
-            [self.prepare_for_tokenization(sentence) for sentence in inputs['input']]
+            [LLM2Vec.prepare_for_tokenization(sentence) for sentence in inputs['input']]
             )
             features = batch_to_device(features, self.config.device)
 
