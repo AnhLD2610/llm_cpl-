@@ -18,13 +18,13 @@ class EncodingModel(nn.Module):
 
 
             tokenizer = AutoTokenizer.from_pretrained(
-                "McGill-NLP/LLM2Vec-Meta-Llama-3-8B-Instruct-mntp"
+                "McGill-NLP/LLM2Vec-Meta-Llama-3-8B-Instruct-mntp-supervised"
             )
             config = AutoConfig.from_pretrained(
-                "McGill-NLP/LLM2Vec-Meta-Llama-3-8B-Instruct-mntp", trust_remote_code=True
+                "McGill-NLP/LLM2Vec-Meta-Llama-3-8B-Instruct-mntp-supervised", trust_remote_code=True
             )
             model = AutoModel.from_pretrained(
-                "McGill-NLP/LLM2Vec-Meta-Llama-3-8B-Instruct-mntp",
+                "McGill-NLP/LLM2Vec-Meta-Llama-3-8B-Instruct-mntp-supervised",
                 trust_remote_code=True,
                 config=config,
                 torch_dtype=torch.bfloat16,
