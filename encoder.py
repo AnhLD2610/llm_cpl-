@@ -197,7 +197,7 @@ class EncodingModel(nn.Module):
             input_embedding = self.embedding_input(inputs['ids'])
             # outputs_words = self.encoder.encode((inputs_embeds=input_embedding, attention_mask=inputs['mask'])[0]
         else:
-            outputs_words = self.encoder.encode((inputs['input'])) # (b, h)
+            outputs_words = self.encoder.encode_train((inputs['input'])) # (b, h)
         # outputs_words = torch.nn.functional.normalize(outputs_words, p=2, dim=1)
         return outputs_words
         # # return [CLS] hidden
