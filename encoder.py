@@ -33,6 +33,7 @@ class EncodingModel(nn.Module):
             model = PeftModel.from_pretrained(
                 model,
                 "McGill-NLP/LLM2Vec-Meta-Llama-3-8B-Instruct-mntp",
+                is_trainable=True,
             )
             model = model.merge_and_unload()  # This can take several minutes on cpu
 
@@ -42,9 +43,9 @@ class EncodingModel(nn.Module):
             )
 
             # Wrapper for encoding and pooling operations
-            for name, param in model.named_parameters():
-                if 'lora_A' in name or 'lora_B' in name:
-                    param.requires_grad = True
+            # for name, param in model.named_parameters():
+            #     if 'lora_A' in name or 'lora_B' in name:
+            #         param.requires_grad = True
             
             self.encoder = LLM2Vec(model, tokenizer, pooling_mode="mean", max_length=256)
 
