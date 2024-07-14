@@ -32,7 +32,7 @@ class EncodingModel(nn.Module):
             )
             model = PeftModel.from_pretrained(
                 model,
-                "McGill-NLP/LLM2Vec-Meta-Llama-3-8B-Instruct-mntp",
+                "McGill-NLP/LLM2Vec-Meta-Llama-3-8B-Instruct-mntp-supervised",
                 is_trainable=True,
             )
             model = model.merge_and_unload()  # This can take several minutes on cpu
