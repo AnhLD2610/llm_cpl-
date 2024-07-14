@@ -30,6 +30,9 @@ class EncodingModel(nn.Module):
                 torch_dtype=torch.bfloat16,
                 device_map="cuda" if torch.cuda.is_available() else "cpu",
             )
+
+
+            model.enable_input_require_grads()
             model = PeftModel.from_pretrained(
                 model,
                 "McGill-NLP/LLM2Vec-Meta-Llama-3-8B-Instruct-mntp-supervised",
