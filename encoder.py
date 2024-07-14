@@ -26,7 +26,6 @@ class EncodingModel(nn.Module):
         if config.model == 'bert':
             self.tokenizer = AutoTokenizer.from_pretrained(
                 "McGill-NLP/LLM2Vec-Meta-Llama-3-8B-Instruct-mntp",
-                return_tensors='pt'
             )
             # config = AutoConfig.from_pretrained(
             #     "McGill-NLP/LLM2Vec-Meta-Llama-3-8B-Instruct-mntp", trust_remote_code=True
@@ -214,7 +213,7 @@ class EncodingModel(nn.Module):
             # features = self.tokenizer(
             # [self.encoder.prepare_for_tokenization(sentence) for sentence in inputs['input']]
             # )
-            features = self.tokenizer(inputs['input'])
+            features = self.tokenizer(inputs['input'], return_tensors="pt")
             features = batch_to_device(features, self.config.device)
             print(features)
             # with torch.no_grad():
