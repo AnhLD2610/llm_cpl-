@@ -141,9 +141,9 @@ class Manager(object):
         epoch = self.config.epoch_mem if is_memory else self.config.epoch
 
         # Print the encoder parameters and requires_grad status
-        print("Encoder parameters and their requires_grad status:")
-        for name, param in encoder.named_parameters():
-            print(f"Parameter: {name}, requires_grad: {param.requires_grad}")
+        # print("Encoder parameters and their requires_grad status:")
+        # for name, param in encoder.named_parameters():
+        #     print(f"Parameter: {name}, requires_grad: {param.requires_grad}")
 
         for i in range(epoch):
             for batch_num, (instance, labels, ind) in enumerate(data_loader):

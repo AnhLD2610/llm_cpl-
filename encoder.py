@@ -51,9 +51,9 @@ class EncodingModel(nn.Module):
             # )
 
             # Wrapper for encoding and pooling operations
-            # for name, param in model.named_parameters():
-            #     if 'lora_A' in name or 'lora_B' in name:
-            #         param.requires_grad = True
+            for name, param in self.encoder.named_parameters():
+                if 'lora_A' in name or 'lora_B' in name:
+                    param.requires_grad = True
             
 
         # if config.tune == 'prompt':
