@@ -42,10 +42,11 @@ class EncodingModel(nn.Module):
             )
 
             # Wrapper for encoding and pooling operations
-            self.encoder = LLM2Vec(model, tokenizer, pooling_mode="mean", max_length=256)
-            for name, param in self.encoder.named_parameters():
+            for name, param in model.named_parameters():
                 if 'lora_A' in name or 'lora_B' in name:
                     param.requires_grad = True
+            
+            self.encoder = LLM2Vec(model, tokenizer, pooling_mode="mean", max_length=256)
 
         # if config.tune == 'prompt':
         #     for param in self.encoder.parameters():
