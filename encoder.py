@@ -37,16 +37,16 @@ class EncodingModel(nn.Module):
             )
             model = model.merge_and_unload()  # This can take several minutes on cpu
 
-            model.enable_input_require_grads()
-            # Loading supervised model. This loads the trained LoRA weights on top of MNTP model. Hence the final weights are -- Base model + MNTP (LoRA) + supervised (LoRA).
-            model = PeftModel.from_pretrained(
-                model, "McGill-NLP/LLM2Vec-Meta-Llama-3-8B-Instruct-mntp-supervised"
-            )
+            # model.enable_input_require_grads()
+            # # Loading supervised model. This loads the trained LoRA weights on top of MNTP model. Hence the final weights are -- Base model + MNTP (LoRA) + supervised (LoRA).
+            # model = PeftModel.from_pretrained(
+            #     model, "McGill-NLP/LLM2Vec-Meta-Llama-3-8B-Instruct-mntp-supervised"
+            # )
 
             # Wrapper for encoding and pooling operations
-            for name, param in model.named_parameters():
-                if 'lora_A' in name or 'lora_B' in name:
-                    param.requires_grad = True
+            # for name, param in model.named_parameters():
+            #     if 'lora_A' in name or 'lora_B' in name:
+            #         param.requires_grad = True
             
             self.encoder = LLM2Vec(model, tokenizer, pooling_mode="mean", max_length=256)
 
