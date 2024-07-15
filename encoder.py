@@ -51,7 +51,7 @@ class EncodingModel(nn.Module):
                 "McGill-NLP/LLM2Vec-Meta-Llama-3-8B-Instruct-mntp",
                 peft_model_name_or_path="McGill-NLP/LLM2Vec-Meta-Llama-3-8B-Instruct-mntp-supervised",
                 device_map="cuda" if torch.cuda.is_available() else "cpu",
-                torch_dtype=torch.bfloat16,
+                torch_dtype=torch.float32,
                 merge_peft=True,
                 pooling_mode="mean",
                 max_length=256,
