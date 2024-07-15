@@ -173,7 +173,7 @@ class Manager(object):
 
 
     def eval_encoder_proto(self, encoder, seen_proto, seen_relid, test_data):
-        batch_size = 16
+        batch_size = 2
         test_loader = get_data_loader_BERT(self.config, test_data, False, False, batch_size)
         
         corrects = 0.0
@@ -294,13 +294,13 @@ class Manager(object):
             seen_relid = []
             for rel in seen_relations:
                 seen_relid.append(self.rel2id[rel])
-            ac1 = self.eval_encoder_proto(encoder, seen_proto, seen_relid, test_data_initialize_cur)
+            # ac1 = self.eval_encoder_proto(encoder, seen_proto, seen_relid, test_data_initialize_cur)
             ac2 = self.eval_encoder_proto(encoder, seen_proto, seen_relid, test_data_initialize_seen)
-            cur_acc_num.append(ac1)
+            # cur_acc_num.append(ac1)
             total_acc_num.append(ac2)
-            cur_acc.append('{:.4f}'.format(ac1))
+            # cur_acc.append('{:.4f}'.format(ac1))
             total_acc.append('{:.4f}'.format(ac2))
-            print('cur_acc: ', cur_acc)
+            # print('cur_acc: ', cur_acc)
             print('his_acc: ', total_acc)
 
         torch.cuda.empty_cache()
