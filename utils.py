@@ -24,7 +24,7 @@ class Moment:
         encoder.eval()
         datalen = len(dataset)
         if not is_memory:
-            self.features = torch.zeros(datalen, self.config.encoder_output_size)
+            self.features = torch.zeros(datalen, self.config.encoder_output_size, dtype=torch.float32)
             data_loader = get_data_loader_BERT(self.config, dataset) # shuffle=False
             lbs = []
             for step, (instance, labels, ind) in enumerate(data_loader):
@@ -40,7 +40,7 @@ class Moment:
             self.labels = lbs
         else:
             self.mem_samples = dataset
-            self.mem_features = torch.zeros(datalen, self.config.encoder_output_size)
+            self.mem_features = torch.zeros(datalen, self.config.encoder_output_size, dtype=torch.float32)
             data_loader = get_data_loader_BERT(self.config, dataset) # shuffle=False
             lbs = []
             for step, (instance, labels, ind) in enumerate(data_loader):
@@ -103,7 +103,7 @@ class Moment:
                 sample_id = idx
             ct_x = self.features[sample_id].to(self.config.device) # (N, H)
             ct_y = self.labels[sample_id] # (N)
-        
+
         # l2 normalize
         x = F.normalize(x, p=2, dim=1).to(self.config.device)
         ct_x = F.normalize(ct_x, p=2, dim=1)

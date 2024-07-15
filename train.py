@@ -154,7 +154,6 @@ class Manager(object):
                 hidden = encoder(instance)
                 loss = self.moment.contrastive_loss(hidden, labels, is_memory)
                 optimizer.zero_grad()
-                loss.requires_grad = True
                 loss.backward()
                 optimizer.step()
                 optimizer.zero_grad()
