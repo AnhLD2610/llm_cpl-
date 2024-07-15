@@ -213,9 +213,9 @@ class EncodingModel(nn.Module):
             # features = self.tokenizer(
             # [self.encoder.prepare_for_tokenization(sentence) for sentence in inputs['input']]
             # )
-            features = self.tokenizer(inputs['input'], return_tensors="pt",padding=True)
+            features = self.encoder.tokenize(inputs['input'])
             features = batch_to_device(features, self.config.device)
-            print(features)
+            # print(features)
             # with torch.no_grad():
             embeddings = self.encoder.forward(features)
 
