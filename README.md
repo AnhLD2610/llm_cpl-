@@ -1,10 +1,15 @@
 
 ## install and login to get access llama3
 !pip install transformers==4.36.0 wandb openai nltk torch scikit-learn retry
+
 !pip install google-generativeai
+
 !pip install llm2vec
+
 !pip install flash-attn --no-build-isolation
+
 !huggingface-cli login --token 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
+
 ## Train
 To run our method, use command: 
  ```
