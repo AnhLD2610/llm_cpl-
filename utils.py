@@ -143,7 +143,29 @@ class Moment:
         return supervised_contrastive_loss
 
 
-
+def gpt(input, t=0, key=None):
+    MAX_TRIES = 15
+    # time.sleep(1)
+    # openai.api_key = key
+    # completion = openai.ChatCompletion.create(
+    #     model='gpt-3.5-turbo',
+    #     messages=[{"role": "user", "content": input}],
+    #     temperature=t
+    # )
+    # return completion.choices[0].message.content
+    while MAX_TRIES > 0:
+        try:
+            time.sleep(5)
+            cur_api_key = api_queue.popleft()
+            api_queue.append(cur_api_key)
+            genai.configure(api_key=cur_api_key)
+            # genai.configure(api_key= 'AIzaSyDBECQnpdlHjyw0m90b8nMRBsA_oaE0WXU')
+            model = genai.GenerativeModel('gemini-1.5-pro-latest')
+            response = model.generate_content(input)
+            return response.text
+        except:
+            MAX_TRIES -= 1
+    return ''
 
 @retry(tries=10, delay=1)
 def gemini(input, t=0, key=None):
