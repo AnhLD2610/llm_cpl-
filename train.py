@@ -132,14 +132,15 @@ class Manager(object):
                 for k in instance.keys():
                     instance[k] = instance[k].to(self.config.device)
 
-                batch_instance = {'ids': [], 'mask': []} 
+                batch_instance = {'input': []}
 
                 # for label in labels:
                     # batch_instance['ids'] = torch.tensor([item[0]['ids'] for item in data])
                     # batch_instance['mask'] = torch.tensor([item[0]['mask'] for item in data])
 
-                batch_instance['ids'] = torch.tensor([seen_des[self.id2rel[label.item()]]['ids'] for label in labels]).to(self.config.device)
-                batch_instance['mask'] = torch.tensor([seen_des[self.id2rel[label.item()]]['mask'] for label in labels]).to(self.config.device)
+                batch_instance['input'] = [seen_des[self.id2rel[label.item()]] for label in labels]
+                # batch_instance['ids'] = torch.tensor([seen_des[self.id2rel[label.item()]]['ids'] for label in labels]).to(self.config.device)
+                # batch_instance['mask'] = torch.tensor([seen_des[self.id2rel[label.item()]]['mask'] for label in labels]).to(self.config.device)
 
                 n = len(labels)
                 new_matrix_labels = np.zeros((n, n), dtype=float)
@@ -419,18 +420,20 @@ class Manager(object):
             historic_test_data, seen_relations, seen_descriptions) in enumerate(sampler):
 
             for rel in current_relations:
-                ids = self.tokenizer.encode(seen_descriptions[rel],
-                                    padding='max_length',
-                                    truncation=True,
-                                    max_length=self.config.max_length)        
+                # ids = self.tokenizer.encode(seen_descriptions[rel],
+                #                     padding='max_length',
+                #                     truncation=True,
+                #                     max_length=self.config.max_length)        
                 # mask
-                mask = np.zeros(self.config.max_length, dtype=np.int32)
-                end_index = np.argwhere(np.array(ids) == self.tokenizer.get_vocab()[self.tokenizer.sep_token])[0][0]
-                mask[:end_index + 1] = 1 
+                # mask = np.zeros(self.config.max_length, dtype=np.int32)
+                # end_index = np.argwhere(np.array(ids) == self.tokenizer.get_vocab()[self.tokenizer.sep_token])[0][0]
+                # mask[:end_index + 1] = 1 
                 if rel not in seen_des:
+                #     seen_des[rel] = {}
+                #     seen_des[rel]['ids'] = ids
+                #     seen_des[rel]['mask'] = mask
                     seen_des[rel] = {}
-                    seen_des[rel]['ids'] = ids
-                    seen_des[rel]['mask'] = mask
+                    seen_des[rel]['input'] = seen_descriptions[rel]
 
             # Initialization
             self.moment = Moment(self.config)
