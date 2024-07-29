@@ -1,6 +1,6 @@
 
 ## install and login to get access llama3
-!pip install transformers==4.36.0 wandb openai nltk torch scikit-learn retry
+!pip install transformers==4.40.0 wandb openai nltk torch scikit-learn retry
 
 !pip install google-generativeai
 
