@@ -42,6 +42,8 @@ class data_sampler_CFRL(object):
 
         # read relations
         self.id2rel, self.rel2id = self._read_relations(self.config.relation_name)
+        self.rel2des, self.id2des = self._read_descriptions(self.config.relation_description)
+
         self.config.num_of_relation = len(self.id2rel)
 
         # read data
@@ -74,6 +76,8 @@ class data_sampler_CFRL(object):
         # record relations
         self.seen_relations = []
         self.history_test_data = {}
+        self.seen_descriptions = {}
+
 
     def set_seed(self, seed):
         self.seed = seed
@@ -108,9 +112,10 @@ class data_sampler_CFRL(object):
             cur_valid_data[self.id2rel[index]] = self.valid_data[index]
             cur_test_data[self.id2rel[index]] = self.test_data[index]
             self.history_test_data[self.id2rel[index]] = self.test_data[index]
-
+            self.seen_descriptions[self.id2rel[index]] = self.id2des[index]
+            
         return cur_training_data, cur_valid_data, cur_test_data, current_relations,\
-            self.history_test_data, self.seen_relations
+            self.history_test_data, self.seen_relations, self.seen_descriptions
 
     def _temp_datapath(self, data_type):
         '''
