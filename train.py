@@ -1,4 +1,7 @@
 import argparse
+
+import nltk
+nltk.download('punkt')
 import torch
 import random
 import sys
@@ -13,14 +16,12 @@ import torch.nn.functional as F
 import warnings
 warnings.filterwarnings("ignore")
 
-
 from sampler import data_sampler_CFRL
 from data_loader import get_data_loader_BERT
 from utils import Moment, gen_data
 from encoder import EncodingModel
 # import wandb
 
-from transformers import BertTokenizer
 from add_loss import MultipleNegativesRankingLoss, BatchHardSoftMarginTripletLoss
 
 class Manager(object):
