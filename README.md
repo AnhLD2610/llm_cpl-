@@ -10,14 +10,12 @@
 
 !huggingface-cli login --token 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
 
+
 ## Train
 To run our method, use command: 
- ```
-  bash bash/fewrel_5shot.sh  # for FewRel 5-shot setting
-  bash bash/fewrel_10shot.sh # for FewRel 10-shot setting
-  bash bash/tacred_5shot.sh  # for TACRED 5-shot setting
-  bash bash/tacred_10shot.sh # for TACRED 10-shot setting
-```
+
+!python train.py --task_name Tacred --num_k 5 --num_gen 5 >> log-llm2vec-full_setting_Tacred.txt
+!python train.py --task_name Fewrel --num_k 5 --num_gen 2 >> log-llm2vec-full_setting_Fewrel.txt
 
 You can refer to `config.ini` to adjust other hyperparameters.
 

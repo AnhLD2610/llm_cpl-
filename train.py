@@ -399,10 +399,10 @@ class Manager(object):
         seen_des = {}
 
 
-        self.unused_tokens = ['[unused0]', '[unused1]', '[unused2]', '[unused3]']
-        self.unused_token = '[unused0]'
-        self.tokenizer = BertTokenizer.from_pretrained(self.config.bert_path, \
-            additional_special_tokens=[self.unused_token])
+        # self.unused_tokens = ['[unused0]', '[unused1]', '[unused2]', '[unused3]']
+        # self.unused_token = '[unused0]'
+        # self.tokenizer = BertTokenizer.from_pretrained(self.config.bert_path, \
+        #     additional_special_tokens=[self.unused_token])
         # ids = self.tokenizer.encode(' '.join(prompt),
         #                             padding='max_length',
         #                             truncation=True,
@@ -491,16 +491,16 @@ class Manager(object):
             for i in range(len(seen_proto)):
                 list_seen_des.append(seen_des_by_id[seen_relid[i]])
 
-            rep_des = []
-            for i in range(len(list_seen_des)):
-                sample = {
-                    'ids' : torch.tensor([list_seen_des[i]['ids']]).to(self.config.device),
-                    'mask' : torch.tensor([list_seen_des[i]['mask']]).to(self.config.device)
-                }
-                hidden = encoder(sample, is_des=True)
-                hidden = hidden.detach().cpu().data
-                rep_des.append(hidden)
-            rep_des = torch.cat(rep_des, dim=0)
+            # rep_des = []
+            # for i in range(len(list_seen_des)):
+            #     sample = {
+            #         'ids' : torch.tensor([list_seen_des[i]['ids']]).to(self.config.device),
+            #         'mask' : torch.tensor([list_seen_des[i]['mask']]).to(self.config.device)
+            #     }
+            #     hidden = encoder(sample, is_des=True)
+            #     hidden = hidden.detach().cpu().data
+            #     rep_des.append(hidden)
+            # rep_des = torch.cat(rep_des, dim=0)
 
             # Eval current task and history task
             test_data_initialize_cur, test_data_initialize_seen = [], []
@@ -508,8 +508,8 @@ class Manager(object):
                 test_data_initialize_cur += test_data[rel]
             for rel in seen_relations:
                 test_data_initialize_seen += historic_test_data[rel]
-            ac1 = self.eval_encoder_proto_des(encoder, seen_proto, seen_relid, test_data_initialize_cur, rep_des)
-            ac2 = self.eval_encoder_proto_des(encoder, seen_proto, seen_relid, test_data_initialize_seen, rep_des)
+            ac1 = self.eval_encoder_proto(encoder, seen_proto, seen_relid, test_data_initialize_cur)
+            ac2 = self.eval_encoder_proto(encoder, seen_proto, seen_relid, test_data_initialize_seen)
             cur_acc_num.append(ac1)
             total_acc_num.append(ac2)
             cur_acc.append('{:.4f}'.format(ac1))
