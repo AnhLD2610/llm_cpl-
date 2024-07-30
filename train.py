@@ -65,8 +65,8 @@ class Manager(object):
         features = []
         encoder.eval()
         for step, (instance, label, idx) in enumerate(data_loader):
-            for k in instance.keys():
-                instance[k] = instance[k].to(self.config.device)
+            # for k in instance.keys():
+            #     instance[k] = instance[k].to(self.config.device)
             hidden = encoder(instance) 
             fea = hidden.detach().cpu().data # (1, H)
             features.append(fea)    
@@ -85,8 +85,8 @@ class Manager(object):
         features = []
         encoder.eval()
         for step, (instance, label, idx) in enumerate(data_loader):
-            for k in instance.keys():
-                instance[k] = instance[k].to(self.config.device)
+            # for k in instance.keys():
+            #     instance[k] = instance[k].to(self.config.device)
             hidden = encoder(instance) 
             fea = hidden.detach().cpu().data # (1, H)
             features.append(fea)
@@ -129,8 +129,8 @@ class Manager(object):
 
         for i in range(epoch):
             for batch_num, (instance, labels, ind) in enumerate(data_loader):
-                for k in instance.keys():
-                    instance[k] = instance[k].to(self.config.device)
+                # for k in instance.keys():
+                #     instance[k] = instance[k].to(self.config.device)
 
                 batch_instance = {'input': []}
 
@@ -285,8 +285,8 @@ class Manager(object):
         total = 0.0
         encoder.eval()
         for batch_num, (instance, label, _) in enumerate(test_loader):
-            for k in instance.keys():
-                instance[k] = instance[k].to(self.config.device)
+            # for k in instance.keys():
+            #     instance[k] = instance[k].to(self.config.device)
             hidden = encoder(instance)
             fea = hidden.cpu().data # place in cpu to eval
             logits = -self._edist(fea, seen_proto) # (B, N) ;N is the number of seen relations
@@ -325,8 +325,8 @@ class Manager(object):
         total = 0.0
         encoder.eval()
         for batch_num, (instance, label, _) in enumerate(test_loader):
-            for k in instance.keys():
-                instance[k] = instance[k].to(self.config.device)
+            # for k in instance.keys():
+            #     instance[k] = instance[k].to(self.config.device)
             hidden = encoder(instance)
             fea = hidden.cpu().data  # place in cpu to eval
             logits = -self._edist(fea, seen_proto)  # (B, N) ;N is the number of seen relations
