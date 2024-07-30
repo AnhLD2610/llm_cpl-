@@ -113,7 +113,7 @@ class data_sampler_CFRL(object):
             cur_test_data[self.id2rel[index]] = self.test_data[index]
             self.history_test_data[self.id2rel[index]] = self.test_data[index]
             self.seen_descriptions[self.id2rel[index]] = self.id2des[index]
-            
+
         return cur_training_data, cur_valid_data, cur_test_data, current_relations,\
             self.history_test_data, self.seen_relations, self.seen_descriptions
 
@@ -230,6 +230,18 @@ class data_sampler_CFRL(object):
                 id2rel[index] = rel
                 rel2id[rel] = index
         return id2rel, rel2id
+    
+    def _read_descriptions(self, file):
+            # id2rel, rel2id = {}, {}
+            rel2des = {}
+            id2des = {}
+            with open(file) as f:
+                for index, line in enumerate(f):
+                    rel = line.strip()
+                    x = rel.split('\t')
+                    rel2des[x[1]] = x[2]
+                    id2des[int(x[0])] = x[2]
+            return rel2des, id2des 
 
    
     
