@@ -138,7 +138,7 @@ class Manager(object):
                     # batch_instance['ids'] = torch.tensor([item[0]['ids'] for item in data])
                     # batch_instance['mask'] = torch.tensor([item[0]['mask'] for item in data])
 
-                batch_instance['input'] = [seen_des[self.id2rel[label.item()]] for label in labels]
+                batch_instance['input'] = [seen_des[self.id2rel[label.item()]]['input'] for label in labels]
                 # batch_instance['ids'] = torch.tensor([seen_des[self.id2rel[label.item()]]['ids'] for label in labels]).to(self.config.device)
                 # batch_instance['mask'] = torch.tensor([seen_des[self.id2rel[label.item()]]['mask'] for label in labels]).to(self.config.device)
 
