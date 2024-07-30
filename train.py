@@ -1,7 +1,7 @@
 import argparse
 
 import nltk
-nltk.download('punkt')
+# nltk.download('punkt')
 import torch
 import random
 import sys
@@ -279,7 +279,7 @@ class Manager(object):
         print('')             
 
     def eval_encoder_proto(self, encoder, seen_proto, seen_relid, test_data):
-        batch_size = 16
+        batch_size = 2
         test_loader = get_data_loader_BERT(self.config, test_data, False, False, batch_size)
         
         corrects = 0.0
