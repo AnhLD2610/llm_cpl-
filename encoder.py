@@ -201,7 +201,7 @@ class EncodingModel(nn.Module):
     #         return concerate_h_t
 
 
-    def forward(self, inputs): # (b, max_length)
+    def forward(self, inputs, is_des = False): # (b, max_length)
         # batch_size = inputs['input'].size()[0]
         # tensor_range = torch.arange(batch_size) # (b)     
         pattern = self.config.pattern
@@ -213,11 +213,18 @@ class EncodingModel(nn.Module):
             # features = self.tokenizer(
             # [self.encoder.prepare_for_tokenization(sentence) for sentence in inputs['input']]
             # )
-            features = self.encoder.tokenize(inputs['input'])
-            features = batch_to_device(features, self.config.device)
-            # print(features)
-            # with torch.no_grad():
-            embeddings = self.encoder.forward(features)
+            if is_des == True:
+                features = self.encoder.tokenize(inputs['input'])
+                features = batch_to_device(features, self.config.device)
+                # print(features)
+                # with torch.no_grad():
+                embeddings = self.encoder.forward(features)
+            else:
+                features = self.encoder.tokenize(inputs['input'])
+                features = batch_to_device(features, self.config.device)
+                # print(features)
+                # with torch.no_grad():
+                embeddings = self.encoder.forward(features)
 
             # outputs_words = self.encoder.encode_train((inputs['input'])) # (b, h)
         # outputs_words = torch.nn.functional.normalize(outputs_words, p=2, dim=1)
