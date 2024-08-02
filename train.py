@@ -148,9 +148,9 @@ class Manager(object):
 
                 # Fill the matrix according to the label comparison
                 for i1 in range(n):
-                    for j in range(n):
-                        if labels[i1] == labels[j]:
-                            new_matrix_labels[i1][j] = 1.0
+                    for j1 in range(n):
+                        if labels[i1] == labels[j1]:
+                            new_matrix_labels[i1][j1] = 1.0
 
                 new_matrix_labels_tensor = torch.tensor(new_matrix_labels).to(config.device)
                 
@@ -254,7 +254,7 @@ class Manager(object):
                 else:
                     loss3 = 0.0
 
-                loss = loss + 2.0*loss2 + 0.5*infoNCE_loss + loss3
+                loss = loss + 1.0*loss2 + 0.5*infoNCE_loss + loss3
                 # if is_memory:
                 # loss3 = OnlineContrastiveLoss()
                 # loss3 = loss3(hidden, labels_des)
