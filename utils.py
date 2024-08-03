@@ -9,6 +9,9 @@ from nltk import word_tokenize
 from retry import retry
 import google.generativeai as genai
 
+import warnings
+warnings.filterwarnings("ignore")
+
 import logging 
 from collections import deque
 api_key = [ 
