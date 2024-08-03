@@ -272,10 +272,10 @@ class Manager(object):
                     self.moment.update(ind, hidden.detach().cpu().data, is_memory=False)
                 # logging.debug
                 if is_memory:
-                    sys.stdout.write('MemoryTrain:  epoch {0:2}, batch {1:5} | loss: {2:2.7f}'.format(i, batch_num, loss.item()) + '\r')
+                    logging.debug('MemoryTrain:  epoch {0:2}, batch {1:5} | loss: {2:2.7f}'.format(i, batch_num, loss.item()) + '\r')
                 else:
-                    sys.stdout.write('CurrentTrain: epoch {0:2}, batch {1:5} | loss: {2:2.7f}'.format(i, batch_num, loss.item()) + '\r')
-                sys.stdout.flush() 
+                    logging.debug('CurrentTrain: epoch {0:2}, batch {1:5} | loss: {2:2.7f}'.format(i, batch_num, loss.item()) + '\r')
+                # sys.stdout.flush() 
         logging.debug('')             
 
     def eval_encoder_proto(self, encoder, seen_proto, seen_relid, test_data):
@@ -302,9 +302,9 @@ class Manager(object):
             acc = correct / batch_size
             corrects += correct
             total += batch_size
-            sys.stdout.write('[EVAL] batch: {0:4} | acc: {1:3.2f}%,  total acc: {2:3.2f}%   '\
+            logging.debug('[EVAL] batch: {0:4} | acc: {1:3.2f}%,  total acc: {2:3.2f}%   '\
                 .format(batch_num, 100 * acc, 100 * (corrects / total)) + '\r')
-            sys.stdout.flush()        
+            # sys.stdout.flush()        
         logging.debug('')
         return corrects / total
     def eval_encoder_proto_des(self, encoder, seen_proto, seen_relid, test_data, rep_des):
@@ -352,7 +352,7 @@ class Manager(object):
             acc = correct / batch_size
             corrects += correct
             total += batch_size
-            sys.stdout.write('[EVAL] batch: {0:4} | acc: {1:3.2f}%,  total acc: {2:3.2f}%   ' \
+            logging.debug('[EVAL] batch: {0:4} | acc: {1:3.2f}%,  total acc: {2:3.2f}%   ' \
                              .format(batch_num, 100 * acc, 100 * (corrects / total)) + '\r')
             sys.stdout.flush()
         logging.debug('')
