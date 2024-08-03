@@ -9,7 +9,7 @@ from nltk import word_tokenize
 from retry import retry
 import google.generativeai as genai
 
-
+import logging 
 from collections import deque
 api_key = [ 
 ]
@@ -327,9 +327,9 @@ def gpt(input, t=0, key=None):
             response = model.generate_content(input, generation_config = generation_config)
             return response.text
         except Exception as e:
-            print(e)
+            logging.debug(e)
             MAX_TRIES -= 1
-    print('gen failed')
+    logging.debug('gen failed')
     return ''
     
         
@@ -436,17 +436,17 @@ def gen_data(r2desc, rel2id, sample, n=10, t=0, key=None):
     MAX_TRIES = 15
     rname = sample['relation']
     rdesc = r2desc[rname]
-    print('####', rname, '####')
+    logging.debug(f'#### {rname} ####')
     input = prompt_input(rname, rdesc, sample=sample, n=n)
-    print(input)
+    logging.debug(input)
     output = gpt(input=input, t=t, key=key)
-    print(output)
+    logging.debug(output)
     while MAX_TRIES > 0:
         try:
             parse_output = parse(rel2id, output)
             return parse_output
         except Exception as e:
-            print(e)
+            logging.debug(e)
             t = random.uniform(0.5, 1)
             output = gpt(input=input + "\nRelation: ", t=t, key=key)
             MAX_TRIES -= 1
@@ -486,6 +486,8 @@ Tail Entity: United States
 Context: The musician, Bob Marley, was born in Jamaica and spent most of his life there before moving to Miami, Florida, in the 1970s.
 Head Entity: Bob Marley
 Tail Entity: Jamaica """
-    # print(parse(s))
+    # logging.debug(parse(s))
+
+
 
 

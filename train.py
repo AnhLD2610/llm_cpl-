@@ -12,7 +12,7 @@ import torch.optim as optim
 from sklearn.cluster import KMeans
 from config import Config
 import torch.nn.functional as F
-
+import logging 
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -154,7 +154,7 @@ class Manager(object):
 
                 new_matrix_labels_tensor = torch.tensor(new_matrix_labels).to(config.device)
                 
-                # print(new_matrix_labels_tensor)
+                # logging.debug(new_matrix_labels_tensor)
 
                     # batch_instance['ids'] = torch.tensor([item[0]['ids'] for item in seen_des[self.id2rel[label.items()]]])
                     # seen_des[self.id2rel[label.items()]]
@@ -188,22 +188,22 @@ class Manager(object):
 
                     # f_pos = encoder.infoNCE_f(positive_hidden, positive_hidden)
                     # f_neg = encoder.infoNCE_f(negative_hidden, negative_hidden)
-                    # print(positive_hidden.shape) # 1,768
-                    # print(negative_hidden.shape) # 11,768 
+                    # logging.debug(positive_hidden.shape) # 1,768
+                    # logging.debug(negative_hidden.shape) # 11,768 
 
                     f_pos = torch.matmul(positive_lmhead_output, positive_hidden.T)  # Shape: (1, 1)
                     f_neg = torch.matmul(positive_lmhead_output, negative_hidden.T)  # Shape: (1, N)
 
-                    # print(f_pos.shape)
-                    # print(f_neg.shape)
+                    # logging.debug(f_pos.shape)
+                    # logging.debug(f_neg.shape)
                     f_concat = torch.cat([f_pos, f_neg], dim=1).squeeze()
 
                     f_concat = torch.log(torch.max(f_concat , torch.tensor(1e-9).to(self.config.device)))
-                    # print(f_concat.shape)
+                    # logging.debug(f_concat.shape)
                     try:
                         infoNCE_loss += -torch.log(F.softmax(f_concat)[0])
-                        # print(F.softmax(f_concat, dim = 0)[0].shape)
-                        # print(infoNCE_loss.shape)
+                        # logging.debug(F.softmax(f_concat, dim = 0)[0].shape)
+                        # logging.debug(infoNCE_loss.shape)
 
                     except:
                         None
@@ -217,17 +217,17 @@ class Manager(object):
                 #     negative_sample_indexs = np.where(np.array(list_labels) != list_labels[j])[0]
                     
                 #     positive_hidden = hidden[j].unsqueeze(0)
-                #     print(positive_hidden.shape) # 1,768 
+                #     logging.debug(positive_hidden.shape) # 1,768 
                 #     negative_hidden = hidden[negative_sample_indexs]
 
                 #     positive_lmhead_output = labels_des[j].unsqueeze(0)
-                #     print(positive_lmhead_output.shape) # 1,768 
+                #     logging.debug(positive_lmhead_output.shape) # 1,768 
                 #     f_pos = encoder.infoNCE_f(positive_lmhead_output, positive_hidden)
-                #     print(f_pos.shape) # 1,1
+                #     logging.debug(f_pos.shape) # 1,1
                 #     f_neg = encoder.infoNCE_f(positive_lmhead_output, negative_hidden)
-                #     print(f_neg.shape) # 1,14
+                #     logging.debug(f_neg.shape) # 1,14
                 #     f_concat = torch.cat([f_pos, f_neg], dim=1).squeeze()
-                #     print(f_concat.shape)
+                #     logging.debug(f_concat.shape)
                 #     f_concat = torch.log(torch.max(f_concat , torch.tensor(1e-9).to(self.config.device)))
                 #     try:
                 #         infoNCE_loss += -torch.log(F.softmax(f_concat)[0])
@@ -270,13 +270,13 @@ class Manager(object):
                     # self.moment.update_allmem(encoder)
                 else:
                     self.moment.update(ind, hidden.detach().cpu().data, is_memory=False)
-                # print
+                # logging.debug
                 if is_memory:
                     sys.stdout.write('MemoryTrain:  epoch {0:2}, batch {1:5} | loss: {2:2.7f}'.format(i, batch_num, loss.item()) + '\r')
                 else:
                     sys.stdout.write('CurrentTrain: epoch {0:2}, batch {1:5} | loss: {2:2.7f}'.format(i, batch_num, loss.item()) + '\r')
                 sys.stdout.flush() 
-        print('')             
+        logging.debug('')             
 
     def eval_encoder_proto(self, encoder, seen_proto, seen_relid, test_data):
         batch_size = 2
@@ -305,7 +305,7 @@ class Manager(object):
             sys.stdout.write('[EVAL] batch: {0:4} | acc: {1:3.2f}%,  total acc: {2:3.2f}%   '\
                 .format(batch_num, 100 * acc, 100 * (corrects / total)) + '\r')
             sys.stdout.flush()        
-        print('')
+        logging.debug('')
         return corrects / total
     def eval_encoder_proto_des(self, encoder, seen_proto, seen_relid, test_data, rep_des):
         """
@@ -355,7 +355,7 @@ class Manager(object):
             sys.stdout.write('[EVAL] batch: {0:4} | acc: {1:3.2f}%,  total acc: {2:3.2f}%   ' \
                              .format(batch_num, 100 * acc, 100 * (corrects / total)) + '\r')
             sys.stdout.flush()
-        print('')
+        logging.debug('')
         return corrects / total
 
     def _get_sample_text(self, data_path, index):
@@ -384,7 +384,7 @@ class Manager(object):
         sampler = data_sampler_CFRL(config=self.config, seed=self.config.seed)
         self.config.vocab_size = sampler.config.vocab_size
 
-        print('prepared data!')
+        logging.debug('prepared data!')
         self.id2rel = sampler.id2rel
         self.rel2id = sampler.rel2id
         self.r2desc = self._read_description(self.config.relation_description)
@@ -457,7 +457,7 @@ class Manager(object):
                     for sample in memory_samples[rel]:
                         sample_text = self._get_sample_text(self.config.training_data, sample['index'])
                         gen_samples = gen_data(self.r2desc, self.rel2id, sample_text, self.config.num_gen, self.config.gpt_temp, self.config.key)
-                        print(gen_samples)
+                        logging.debug(gen_samples)
                         gen_text += gen_samples
                 for sample in gen_text:
                     data_generation.append(sampler.tokenize(sample))
@@ -515,8 +515,8 @@ class Manager(object):
             total_acc_num.append(ac2)
             cur_acc.append('{:.4f}'.format(ac1))
             total_acc.append('{:.4f}'.format(ac2))
-            print('cur_acc: ', cur_acc)
-            print('his_acc: ', total_acc)
+            logging.debug(f'cur_acc: {cur_acc}')
+            logging.debug(f'his_acc: {total_acc}')
 
 
         torch.cuda.empty_cache()
@@ -536,6 +536,8 @@ if __name__ == '__main__':
     config.num_k = args.num_k
     config.num_gen = args.num_gen
 
+    logging.basicConfig(filename='llm2vec_fewrel.txt',level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+
     # wandb.init(
     # project = 'CPL',
     # name = f"CPL{args.task_name}_{args.num_k}-shot",
@@ -544,16 +546,16 @@ if __name__ == '__main__':
     #     "task" : args.task_name,
     #     "shot" : f"{args.num_k}-shot"
     # }
-        # )
+    # )
     # config 
-    print('#############params############')
-    print(config.device)
+    logging.debug('#############params############')
+    logging.debug(f'Device: {config.device}')
     config.device = torch.device(config.device)
-    print(f'Task={config.task_name}, {config.num_k}-shot')
-    print(f'Encoding model: {config.model}')
-    print(f'pattern={config.pattern}')
-    print(f'mem={config.memory_size}, margin={config.margin}, gen={config.gen}, gen_num={config.num_gen}')
-    print('#############params############')
+    logging.debug(f'Task={config.task_name}, {config.num_k}-shot')
+    logging.debug(f'Encoding model: {config.model}')
+    logging.debug(f'Pattern: {config.pattern}')
+    logging.debug(f'Memory size: {config.memory_size}, Margin: {config.margin}, Gen: {config.gen}, Gen num: {config.num_gen}')
+    logging.debug('#############params############')
 
     if config.task_name == 'FewRel':
         config.rel_index = './data/CFRLFewRel/rel_index.npy'
@@ -594,8 +596,8 @@ if __name__ == '__main__':
     acc_list = []
     for i in range(config.total_round):
         config.seed = base_seed + i * 100
-        print('--------Round ', i)
-        print('seed: ', config.seed)
+        logging.debug(f'-------Round {i}-------')
+        logging.debug(f'Seed: {config.seed}')
         manager = Manager(config)
         acc = manager.train()
         acc_list.append(acc)
@@ -603,8 +605,9 @@ if __name__ == '__main__':
     
     accs = np.array(acc_list)
     ave = np.mean(accs, axis=0)
-    print('----------END')
-    print('his_acc mean: ', np.around(ave, 4))
+    logging.debug('----------END----------')
+    logging.debug(f'his_acc mean: {np.around(ave, 4)}')
+
 
 
 

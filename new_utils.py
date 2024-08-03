@@ -6,15 +6,31 @@ import numpy as np
 import torch.nn.functional as F
 from data_loader import get_data_loader_BERT
 from nltk import word_tokenize
-
 from retry import retry
 import google.generativeai as genai
-
+from google.generativeai.types import HarmCategory, HarmBlockThreshold
 
 from collections import deque
-api_key = [ 
-    
-]
+api_key = ['AIzaSyBhhtj0QazGHw-rC-UT2DaNe31ewxX1H8A',
+ 'AIzaSyDbOVZpt_IPnLGAj0lefBgM2gqsSnmHHRQ',
+ 'AIzaSyDDFA8lyMRwKBYI59WESPwURy-No6hmK8o',
+ 'AIzaSyBH6akgsXP4-5Lp96DAeepBkcXlIsBtZTo',
+ 'AIzaSyCs38oyPylC1sGXcX7IQYaltdHcKdAm9_g',
+ 'AIzaSyBbTifY_E3QwWha3Z274JXzhsWeYSPIvcE',
+ 'AIzaSyABcVXcKZwNiHUr4rK4JIGHLSxnqjv03_Q',
+ 'AIzaSyBP_KLOmJJWFAbIHdJ4VKGTrznSrPmvHfg',
+ 'AIzaSyC_lW_DujJAOvhFhnxvxeQVj0VthhBsGjo',
+ 'AIzaSyAjNdcFWOYN-1UhM2Q4tocy9T0KfImEEcM',
+ 'AIzaSyC6XNcP87RPNzF7Txvl4oB2ZPcFHRlfxp8',
+ 'AIzaSyDzqZtys4QRT3aokL-qTbkCkMBCzfJmVLc',
+ 'AIzaSyDW40W0mJdWP9pcUhlydBT4gUa-OhV_8VE',
+ 'AIzaSyBixha-TDt3XzpfYIbZhg53xcS8ydVPbBo',
+ 'AIzaSyAovqCq5YxI6JXXqHPPP51YQBrAFGR4Id4',
+ 'AIzaSyDWXCp3DqHkzRF7LpFmnDRqrR8tFDhN6vk',
+ 'AIzaSyBYpN3w3ZrpAlxOik-6eRHtCiP-GWEZvjA',
+ 'AIzaSyA7V6tUutUqxPdGzIGVWggqdVXKZJjclhI',
+ 'AIzaSyAOl78H3f_2e0o9Bydlfc_OmmSnbqgvoYo',
+ 'AIzaSyAkapAtynasS_BTogwUW74razK35O_6cp4']
 api_queue = deque(api_key)
 
 
@@ -95,13 +111,14 @@ class Moment:
             centroids[i, :] = feats[ind, :].mean(dim=0)
         return centroids
 
-    # MCL loss
     def contrastive_loss(self, x, labels, is_memory=False):
         '''
         x (B, H)
         '''
         if is_memory:
             ct_x = self.mem_features.to(self.config.device)
+            # ct_x_des = self.mem_features_des.to(self.config.device)
+
             ct_y = self.mem_labels
         else:
             idx = list(range(len(self.features)))
@@ -109,41 +126,229 @@ class Moment:
                 sample_id = random.sample(idx, self.sample_k)
             else:  # sample number > total feature
                 sample_id = idx
-            ct_x = self.features[sample_id].to(self.config.device) # (N, H)
-            ct_y = self.labels[sample_id] # (N)
+            ct_x = self.features[sample_id].to(self.config.device)  # (N, H)
+            # ct_x_des = self.features_des[sample_id].to(self.config.device)  # (N, H)
+
+            ct_y = self.labels[sample_id]  # (N)
 
         # l2 normalize
-        x = F.normalize(x, p=2, dim=1).to(self.config.device)
-        ct_x = F.normalize(ct_x, p=2, dim=1)
-        
-        t1 = torch.mm(x, ct_x.T) + 1 # 0 <= cos + 1 <= 2
-        zeros = (torch.zeros_like(t1)).to(self.config.device)
-        pos = self.m + 0.5 * t1
-        neg = 1 - self.m + 0.5 * t1
-        dot_product_tempered_pos = torch.where(pos > 0, pos * t1 / self.temperature, zeros)
-        dot_product_tempered_neg = torch.where(neg > 0, neg * t1 / self.temperature, zeros)
-        
-        exp_dot_tempered_pos = (
-            torch.exp(dot_product_tempered_pos - \
-                torch.max(dot_product_tempered_pos, dim=1, keepdim=True)[0].detach()) + 1e-5
-        )
-        exp_dot_tempered_neg = (
-            torch.exp(dot_product_tempered_neg - \
-                torch.max(dot_product_tempered_pos, dim=1, keepdim=True)[0].detach()) + 1e-5
-        ) 
+        x = F.normalize(x, p=2, dim=1) # (B, H)
+        ct_x = F.normalize(ct_x, p=2, dim=1) # (N, H)
+        # ct_x_des = F.normalize(ct_x_des, p=2, dim=1) # (B, H)
+        # x = torch.cat((x, ct_x_des), dim=1) 
+
+        # ct_x = torch.cat((ct_x, ct_x_des), dim=1) # (N, 2*H)
+
+        t1 = torch.mm(x, ct_x.T) + 1  # 0 <= cos + 1 <= 2
+        # zeros = (torch.zeros_like(t1)).to(self.config.device)
+
+
         mask_combined_pos = (labels.unsqueeze(1).repeat(1, ct_y.shape[0]) == ct_y).to(self.config.device)
         mask_combined_neg = ~mask_combined_pos
+
+        # Calculate beta for negative samples
+        exp_t1_neg = torch.exp(t1 / self.temperature) * mask_combined_neg
+        sum_exp_t1_neg = torch.sum(exp_t1_neg, dim=1, keepdim=True) + 1e-6
+        cardinality_neg = torch.sum(mask_combined_neg, dim=1, keepdim=True)
+        # beta = (exp_t1_neg / sum_exp_t1_neg) * cardinality_neg
+
+        exp_t1_pos = torch.exp(t1 / self.temperature) * mask_combined_pos
+        sum_exp_t1_pos = torch.sum(exp_t1_pos, dim=1, keepdim=True) + 1e-6
+
+
+
+        # dot_product_tempered_pos = torch.where(pos > 0, pos * t1 / self.temperature, zeros)
+        # dot_product_tempered_neg = torch.where(neg > 0, neg * t1 / self.temperature, zeros)
+
+        # exp_dot_tempered_pos = (
+        #         torch.exp(dot_product_tempered_pos - \
+        #                   torch.max(dot_product_tempered_pos, dim=1, keepdim=True)[0].detach()) + 1e-5
+        # )
+        # exp_dot_tempered_neg = (
+        #         torch.exp(dot_product_tempered_neg - \
+        #                   torch.max(dot_product_tempered_pos, dim=1, keepdim=True)[0].detach()) + 1e-5
+        # )
+        # mask_combined_pos = (labels.unsqueeze(1).repeat(1, ct_y.shape[0]) == ct_y).to(self.config.device)
+        # mask_combined_neg = ~mask_combined_pos
         cardinality_per_samples = torch.sum(mask_combined_pos, dim=1)
 
-        sum_temp = torch.sum(exp_dot_tempered_pos * mask_combined_pos, dim=1, keepdim=True) \
-            + torch.sum(exp_dot_tempered_neg * mask_combined_neg, dim=1, keepdim=True)
-        log_prob = -torch.log(exp_dot_tempered_pos / sum_temp)
-        supervised_contrastive_loss_per_sample = torch.sum(log_prob * mask_combined_pos, dim=1) / cardinality_per_samples
+        sum_temp = sum_exp_t1_pos + sum_exp_t1_neg
+        log_prob = -torch.log(sum_exp_t1_pos / sum_temp)
+        supervised_contrastive_loss_per_sample = torch.sum(log_prob * mask_combined_pos,
+                                                           dim=1) / cardinality_per_samples
         supervised_contrastive_loss = torch.mean(supervised_contrastive_loss_per_sample)
 
         return supervised_contrastive_loss
 
+    # def contrastive_loss_des(self, x, labels, is_memory=False):
+    #     '''
+    #     x (B, H)
+    #     '''
+    #     if is_memory:
+    #         ct_x = x
+    #         # ct_x_des = self.mem_features_des.to(self.config.device)
 
+    #         ct_y = self.mem_labels
+    #     else:
+    #         idx = list(range(len(self.features)))
+    #         if len(idx) > self.sample_k:
+    #             sample_id = random.sample(idx, self.sample_k)
+    #         else:  # sample number > total feature
+    #             sample_id = idx
+    #         ct_x = x 
+    #         # ct_x_des = self.features_des[sample_id].to(self.config.device)  # (N, H)
+
+    #         ct_y = self.labels[sample_id]  # (N)
+
+    #     # l2 normalize
+    #     x = F.normalize(x, p=2, dim=1) # (B, H)
+    #     ct_x = F.normalize(ct_x, p=2, dim=1) # (N, H)
+    #     # ct_x_des = F.normalize(ct_x_des, p=2, dim=1) # (B, H)
+    #     # x = torch.cat((x, ct_x_des), dim=1) 
+
+    #     # ct_x = torch.cat((ct_x, ct_x_des), dim=1) # (N, 2*H)
+
+    #     t1 = torch.mm(x, ct_x.T) + 1  # 0 <= cos + 1 <= 2
+    #     # zeros = (torch.zeros_like(t1)).to(self.config.device)
+
+
+    #     mask_combined_pos = (labels.unsqueeze(1).repeat(1, ct_y.shape[0]) == ct_y).to(self.config.device)
+    #     mask_combined_neg = ~mask_combined_pos
+
+    #     # Calculate beta for negative samples
+    #     exp_t1_neg = torch.exp(t1 / self.temperature) * mask_combined_neg
+    #     sum_exp_t1_neg = torch.sum(exp_t1_neg, dim=1, keepdim=True) + 1e-6
+    #     cardinality_neg = torch.sum(mask_combined_neg, dim=1, keepdim=True)
+    #     # beta = (exp_t1_neg / sum_exp_t1_neg) * cardinality_neg
+
+    #     exp_t1_pos = torch.exp(t1 / self.temperature) * mask_combined_pos
+    #     sum_exp_t1_pos = torch.sum(exp_t1_pos, dim=1, keepdim=True) + 1e-6
+
+
+
+    #     # dot_product_tempered_pos = torch.where(pos > 0, pos * t1 / self.temperature, zeros)
+    #     # dot_product_tempered_neg = torch.where(neg > 0, neg * t1 / self.temperature, zeros)
+
+    #     # exp_dot_tempered_pos = (
+    #     #         torch.exp(dot_product_tempered_pos - \
+    #     #                   torch.max(dot_product_tempered_pos, dim=1, keepdim=True)[0].detach()) + 1e-5
+    #     # )
+    #     # exp_dot_tempered_neg = (
+    #     #         torch.exp(dot_product_tempered_neg - \
+    #     #                   torch.max(dot_product_tempered_pos, dim=1, keepdim=True)[0].detach()) + 1e-5
+    #     # )
+    #     # mask_combined_pos = (labels.unsqueeze(1).repeat(1, ct_y.shape[0]) == ct_y).to(self.config.device)
+    #     # mask_combined_neg = ~mask_combined_pos
+    #     cardinality_per_samples = torch.sum(mask_combined_pos, dim=1)
+
+    #     sum_temp = sum_exp_t1_pos + sum_exp_t1_neg
+    #     log_prob = -torch.log(sum_exp_t1_pos / sum_temp)
+    #     supervised_contrastive_loss_per_sample = torch.sum(log_prob * mask_combined_pos,
+    #                                                     dim=1) / cardinality_per_samples
+    #     supervised_contrastive_loss = torch.mean(supervised_contrastive_loss_per_sample)
+
+    #     return supervised_contrastive_loss
+    
+    # def contrastive_loss(self, x, labels, is_memory=False):
+    #     '''
+    #     x (B, H)
+    #     '''
+    #     if is_memory:
+    #         ct_x = self.mem_features.to(self.config.device)
+    #         ct_y = self.mem_labels
+    #     else:
+    #         idx = list(range(len(self.features)))
+    #         if len(idx) > self.sample_k:
+    #             sample_id = random.sample(idx, self.sample_k)
+    #         else:  # sample number > total feature
+    #             sample_id = idx
+    #         ct_x = self.features[sample_id].to(self.config.device) # (N, H)
+    #         ct_y = self.labels[sample_id] # (N)
+
+    #     # l2 normalize
+    #     x = F.normalize(x, p=2, dim=1)
+    #     ct_x = F.normalize(ct_x, p=2, dim=1)
+        
+    #     t1 = torch.mm(x, ct_x.T) + 1 # 0 <= cos + 1 <= 2
+    #     zeros = (torch.zeros_like(t1)).to(self.config.device)
+    #     pos = self.m + 0.5 * t1 
+    #     neg = 1 - self.m + 0.5 * t1 
+    #     dot_product_tempered_pos = torch.where(pos > 0, pos * t1 / self.temperature, zeros)
+    #     dot_product_tempered_neg = torch.where(neg > 0, neg * t1 / self.temperature, zeros)
+        
+    #     exp_dot_tempered_pos = (
+    #         torch.exp(dot_product_tempered_pos - \
+    #             torch.max(dot_product_tempered_pos, dim=1, keepdim=True)[0].detach()) + 1e-5
+    #     )
+    #     exp_dot_tempered_neg = (
+    #         torch.exp(dot_product_tempered_neg - \
+    #             torch.max(dot_product_tempered_pos, dim=1, keepdim=True)[0].detach()) + 1e-5
+    #     ) 
+    #     mask_combined_pos = (labels.unsqueeze(1).repeat(1, ct_y.shape[0]) == ct_y).to(self.config.device)
+    #     mask_combined_neg = ~mask_combined_pos
+    #     cardinality_per_samples = torch.sum(mask_combined_pos, dim=1)
+
+    #     exp_t1_neg = exp_dot_tempered_neg * mask_combined_neg
+    #     sum_exp_t1_neg = torch.sum(exp_t1_neg, dim=1, keepdim=True)
+    #     cardinality_neg = torch.sum(mask_combined_neg, dim=1, keepdim=True)
+    #     beta = (exp_t1_neg / sum_exp_t1_neg) * cardinality_neg
+
+    #     sum_temp = torch.sum(exp_dot_tempered_pos * mask_combined_pos, dim=1, keepdim=True) \
+    #         + beta*torch.sum(exp_dot_tempered_neg * mask_combined_neg, dim=1, keepdim=True)
+    #     # sum_temp = torch.sum(exp_dot_tempered_pos * mask_combined_pos, dim=1, keepdim=True) \
+    #     #     + torch.sum(exp_dot_tempered_neg * mask_combined_neg, dim=1, keepdim=True)
+    #     log_prob = -torch.log(exp_dot_tempered_pos / sum_temp)
+    #     supervised_contrastive_loss_per_sample = torch.sum(log_prob * mask_combined_pos, dim=1) / cardinality_per_samples
+    #     supervised_contrastive_loss = torch.mean(supervised_contrastive_loss_per_sample)
+
+    #     return supervised_contrastive_loss
+
+
+
+
+# for openai
+# @retry(tries=10, delay=1)
+def gpt(input, t=0, key=None):
+    MAX_TRIES = 15
+    
+    # time.sleep(1)
+    # openai.api_key = key
+    # completion = openai.ChatCompletion.create(
+    #     model='gpt-3.5-turbo',
+    #     messages=[{"role": "user", "content": input}],
+    #     temperature=t
+    # )
+    # return completion.choices[0].message.content
+    generation_config = {
+        "temperature": t,
+        "response_mime_type": "text/plain",
+        }
+    safety_settings={
+            HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
+            HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
+            HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
+            HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
+            
+        }
+    
+
+    while MAX_TRIES > 0:
+        try:
+            time.sleep(5)
+            cur_api_key = api_queue.popleft()
+            api_queue.append(cur_api_key)
+            genai.configure(api_key=cur_api_key)
+            # genai.configure(api_key= 'AIzaSyDBECQnpdlHjyw0m90b8nMRBsA_oaE0WXU')
+            model = genai.GenerativeModel('gemini-1.5-flash-latest')
+            response = model.generate_content(input, generation_config = generation_config, safety_settings = safety_settings)
+            return response.text
+        except Exception as e:
+            print(e)
+            MAX_TRIES -= 1
+    print('gen failed')
+    return ''
+    
+        
 
 
 @retry(tries=10, delay=1)
@@ -153,7 +358,7 @@ def gemini(input, t=0, key=None):
     api_queue.append(cur_api_key)
     genai.configure(api_key=cur_api_key)
     # genai.configure(api_key= 'AIzaSyDBECQnpdlHjyw0m90b8nMRBsA_oaE0WXU')
-    model = genai.GenerativeModel('gemini-1.5-pro-latest')
+    model = genai.GenerativeModel('gemini-1.5-flash-latest')
     response = model.generate_content(input)
     return response.text
 
@@ -243,7 +448,8 @@ def prompt_input(rname, rdesc, sample=None, n=10):
 
 
 def gen_data(r2desc, rel2id, sample, n=10, t=0, key=None):
-    MAX_TRIES = 10
+    import random
+    MAX_TRIES = 15
     rname = sample['relation']
     rdesc = r2desc[rname]
     print('####', rname, '####')
@@ -255,7 +461,9 @@ def gen_data(r2desc, rel2id, sample, n=10, t=0, key=None):
         try:
             parse_output = parse(rel2id, output)
             return parse_output
-        except:
+        except Exception as e:
+            print(e)
+            t = random.uniform(0.5, 1)
             output = gpt(input=input + "\nRelation: ", t=t, key=key)
             MAX_TRIES -= 1
 
@@ -294,4 +502,4 @@ Tail Entity: United States
 Context: The musician, Bob Marley, was born in Jamaica and spent most of his life there before moving to Miami, Florida, in the 1970s.
 Head Entity: Bob Marley
 Tail Entity: Jamaica """
-    print(parse(s))
+    # print(parse(s))
