@@ -20,7 +20,7 @@ from sampler import data_sampler_CFRL
 from data_loader import get_data_loader_BERT
 from utils import Moment, gen_data
 from encoder import EncodingModel
-# import wandb
+import wandb
 wandb.login(
     anonymous = 'allow',
     relogin = True,
