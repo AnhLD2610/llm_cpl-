@@ -21,11 +21,11 @@ from data_loader import get_data_loader_BERT
 from utils import Moment, gen_data
 from encoder import EncodingModel
 import wandb
-wandb.login(
-    anonymous = 'allow',
-    relogin = True,
-    key = '9e33535aa8c9fcaa7fc1dfa97a70d9de5107ad37'
-)
+# wandb.login(
+#     anonymous = 'allow',
+#     relogin = True,
+#     key = '9e33535aa8c9fcaa7fc1dfa97a70d9de5107ad37'
+# )
 from add_loss import MultipleNegativesRankingLoss, BatchHardSoftMarginTripletLoss
 
 # import wandb
@@ -610,14 +610,14 @@ if __name__ == '__main__':
     base_seed = config.seed
 
     acc_list = []
-    wandb.init(
-        project = 'LLM-CPL',
-        name = f"{args.task_name}_{args.num_k}",
-        config = {
-            'name': "CPL",
-            "task" : args.task_name,
-    }
-)
+#     wandb.init(
+#         project = 'LLM-CPL',
+#         name = f"{args.task_name}_{args.num_k}",
+#         config = {
+#             'name': "CPL",
+#             "task" : args.task_name,
+#     }
+# )
     for i in range(config.total_round):
         config.seed = base_seed + i * 100
         print('--------Round ', i)
