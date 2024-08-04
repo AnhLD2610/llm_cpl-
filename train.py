@@ -265,7 +265,7 @@ class Manager(object):
                 else:
                     loss3 = 0.0
 
-                loss = loss + 1.0*loss2 + 0.5*infoNCE_loss + loss3
+                loss = loss + 0.0*loss2 + 0.5*infoNCE_loss + loss3
                 # wandb.log({'loss': loss})
                 # if is_memory:
                 # loss3 = OnlineContrastiveLoss()
