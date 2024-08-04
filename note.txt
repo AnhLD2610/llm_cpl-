@@ -1,0 +1,2 @@
+fewrel lr =0.0001
+tacred lr = 0.00001
