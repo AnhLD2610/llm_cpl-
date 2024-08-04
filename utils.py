@@ -312,21 +312,28 @@ from openai import OpenAI
 
 def gpt(input, t=0, key=None):
     MAX_TRIES = 15
-    client = OpenAI()
+    # client = OpenAI()
     
     while MAX_TRIES > 0:
         try:
-            time.sleep(5)
-            completion = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {"role": "user", "content": input}
-            ]
-            ,
-            temperature=t
+            time.sleep(3)
+            cur_api_key = api_queue.popleft()
+            api_queue.append(cur_api_key)
+            genai.configure(api_key=cur_api_key)
+            # genai.configure(api_key= 'AIzaSyDBECQnpdlHjyw0m90b8nMRBsA_oaE0WXU')
+            model = genai.GenerativeModel('gemini-1.5-flash-latest')
+            response = model.generate_content(input)
+            return response.text
+            # completion = client.chat.completions.create(
+            # model="gpt-4o-mini",
+            # messages=[
+            #     {"role": "user", "content": input}
+            # ]
+            # ,
+            # temperature=t
 
-            )
-            return completion.choices[0].message.content
+            # )
+            # return completion.choices[0].message.content
         except Exception as e:
             print(e)
             MAX_TRIES -= 1
