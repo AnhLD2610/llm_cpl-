@@ -26,7 +26,9 @@ from add_loss import MultipleNegativesRankingLoss, BatchHardSoftMarginTripletLos
 
 # import wandb
 import argparse
-
+import os
+os.environ["OMP_NUM_THREADS"] = "1" 
+os.environ["MKL_NUM_THREADS"] = "1" 
 # wandb.login(
 #     anonymous = 'allow',
 #     relogin = True,
