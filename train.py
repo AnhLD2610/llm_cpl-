@@ -618,7 +618,7 @@ if __name__ == '__main__':
 #             "task" : args.task_name,
 #     }
 # )
-    for i in range(config.total_round):
+    for i in range(3, config.total_round):
         config.seed = base_seed + i * 100
         print('--------Round ', i)
         print('seed: ', config.seed)
